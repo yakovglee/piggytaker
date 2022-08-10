@@ -1,0 +1,3 @@
+aiogram==2.21
+pygsheets==2.0.5
+python-dotenv==0.20.0
