@@ -48,8 +48,8 @@ def get_lookupMenu() -> InlineKeyboardMarkup:
     btn_lookup = [
         InlineKeyboardButton("Вчера", callback_data='lookup_yest'), 
         InlineKeyboardButton("Сегодня", callback_data='lookup_now'),
-        InlineKeyboardButton("Неделя", callback_data='lookup_week'),
-        InlineKeyboardButton("Месяц", callback_data='lookup_month'),
+        InlineKeyboardButton("Пр. месяц", callback_data='lookup_monthyest'),
+        InlineKeyboardButton("Тк. месяц", callback_data='lookup_monthnow'),
     ]
 
     return _create_markups(lookupMenu, btn_lookup)
