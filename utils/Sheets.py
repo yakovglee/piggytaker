@@ -3,7 +3,8 @@ from typing import List, Union
 
 class GoogleTable:
     def __init__(
-        self, credence_service_file: str = "creds.json", 
+        self, 
+        credence_service_file: str = "creds.json", 
         googlesheet_file_key: str = "1bZ6dgp-lAeRP3viYW6ENgaIrvcy6LZnXtgd2G2rjeJU"
     ) -> None:
         self.credence_service_file = credence_service_file
@@ -13,10 +14,11 @@ class GoogleTable:
         self, googlesheet_client: pygsheets.client.Client
     ) -> pygsheets.Spreadsheet:
         """Get Google.Docs Table sheet by document url"""
+
         sheets: pygsheets.Spreadsheet = googlesheet_client.open_by_key(
             self.googlesheet_file_key
         )
-        return sheets.sheet1
+        return sheets
 
     def _get_googlesheet_client(self):
         """It is authorized using the service key and returns the Google Docs client object"""
@@ -37,6 +39,7 @@ class GoogleTable:
     ):
         gc = self._get_googlesheet_client()
         wks = self._get_googlesheet_by_key(gc)
+        wks = wks.worksheet_by_title('history')
 
         next_row = self._next_available_row(wks)
 
@@ -45,3 +48,14 @@ class GoogleTable:
         wks.update_value("C{}".format(next_row), subcateg)
         wks.update_value("D{}".format(next_row), price)
         wks.update_value("E{}".format(next_row), who)
+
+    def get_data(self, start, end):
+        gc = self._get_googlesheet_client()
+        wks = self._get_googlesheet_by_key(gc)
+        wks = wks.worksheet_by_title('summary')
+
+        data = wks.get_values(start=start, end=end)
+        date = data[0][0]
+        price = data[0][1]
+        
+        return [date, price]

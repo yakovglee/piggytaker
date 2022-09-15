@@ -38,7 +38,8 @@ async def show_categories(message: types.Message, state: FSMContext):
 
         await Counter.counter.set()
         async with state.proxy() as data:
-            data.setdefault('counter', 1)
+            data.setdefault('counter', 0)
+            data['counter'] += 1
 
         kb = nav.get_lookupMenu()
         await message.answer("Отчет за ...", reply_markup=kb)
@@ -212,3 +213,38 @@ async def choice_subcateg_food(message: types.Message, state: FSMContext):
         price=price,
         who=who
     )
+
+
+@dp.callback_query_handler(Text(startswith=['lookup_']), state=[Counter.counter])
+async def get_data(call: types.CallbackQuery, state: FSMContext):
+    date = call.data.split("_")[1]
+
+    if date == 'yest':
+        data = bot._google_table.get_data('B4', 'C4')
+
+        await call.message.edit_text(
+            f'Расходы за вчера {data[0]}\n{data[1]}'
+        )
+
+    elif date == 'now':
+        data = bot._google_table.get_data('B5', 'C5')
+
+        await call.message.edit_text(
+            f'Расходы за сегодня {data[0]}\n{data[1]}'
+        )
+
+    elif date == 'monthnow':
+        data = bot._google_table.get_data('B3', 'C3')
+
+        await call.message.edit_text(
+            f'Расходы за текущий месяц\n{data[1]}'
+        )
+
+    elif date == 'monthyest':
+        data = bot._google_table.get_data('B2', 'C2')
+
+        await call.message.edit_text(
+            f'Расходы за прошлый месяц\n{data[1]}'
+        )
+
+    await state.finish()
