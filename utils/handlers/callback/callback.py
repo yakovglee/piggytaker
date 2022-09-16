@@ -1,4 +1,3 @@
-from pkgutil import get_data
 from utils.bot import bot, dp
 from aiogram import types
 from aiogram.dispatcher import FSMContext, filters
