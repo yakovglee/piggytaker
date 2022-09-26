@@ -3,7 +3,6 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext, filters
 
 from aiogram.dispatcher.filters import Text
-from aiogram.utils.callback_data import CallbackData
 
 import utils.FSM.state as FSMData
 
@@ -13,43 +12,13 @@ import utils.markups as nav
 
 Data = FSMData.Data
 
+@dp.message_handler(Text(equals="Добавить \N{memo}"))
+@dp.message_handler(commands='add')
+async def start_to_add_record(message: types.Message):
+    await Data.date.set()
 
-@dp.message_handler(state="*", commands='reset')
-@dp.message_handler(Text(equals='reset', ignore_case=True), state="*")
-async def cancel_handler(message: types.Message, state: FSMContext):
-    """
-    Позволяет пользователю сбросить запись 
-    """
-    current_state = await state.get_state()
-    if current_state is None:
-        return
-
-    await state.finish()
-
-    await message.reply('Запись сброшена\nВыбери действие',reply_markup=nav.get_infoMenu())
-
-
-
-@dp.message_handler()
-async def show_categories(message: types.Message, state: FSMContext):
-
-    text = message.text
-
-    if text == "Добавить \N{memo}":
-        
-        await Data.date.set()
-
-        kb = nav.get_dateMenu()
-        await message.answer("Выбери день", reply_markup=kb)
-    
-    elif text == "Посмотреть \N{open book}":
-
-
-        kb = nav.get_lookupMenu()
-        await message.answer("Отчет за ...", reply_markup=kb)
-    
-    else:
-        await message.answer("Не могу помочь")
+    kb = nav.get_dateMenu()
+    await message.answer("Выбери день", reply_markup=kb)
 
 
 @dp.callback_query_handler(text_contains="date", state=[Data.date])
@@ -122,6 +91,11 @@ async def choice_categ(call: types.CallbackQuery, state: FSMContext):
     
     await Data.next()
 
+@dp.callback_query_handler(Text(endswith="other"), state=[Data.subcateg])
+async def take_subcateg_msg(call: types.CallbackQuery):
+    await call.message.edit_text("Напиши категорию")
+
+
 @dp.callback_query_handler(Text(startswith=['food', 'trans', 'health', 'house', 'other']), state=[Data.subcateg])
 async def choice_subcateg(call: types.CallbackQuery, state: FSMContext):
     
@@ -164,10 +138,6 @@ async def choice_subcateg(call: types.CallbackQuery, state: FSMContext):
     await call.message.edit_text(f"{data['categ']}:{data['subcateg']}\nЦена")
 
 
-@dp.callback_query_handler(Text(endswith="_other"), state=[Data.subcateg])
-async def take_subcateg_msg(call: types.CallbackQuery):
-    await call.message.edit_text("Напиши категорию")
-
 @dp.message_handler(state=[Data.subcateg])
 async def take_subcateg_msg(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
@@ -208,37 +178,3 @@ async def choice_subcateg_food(message: types.Message, state: FSMContext):
         price=price,
         who=who
     )
-
-@dp.callback_query_handler(Text(startswith=['lookup_']))
-async def get_data(call: types.CallbackQuery, state: FSMContext):
-    date = call.data.split("_")[1]
-
-    if date == 'yest':
-        data = bot._google_table.get_data('B4', 'C4')
-
-        await call.message.edit_text(
-            f'Расходы за вчера {data[0]}\n{data[1]}'
-        )
-
-    elif date == 'now':
-        data = bot._google_table.get_data('B5', 'C5')
-
-        await call.message.edit_text(
-            f'Расходы за сегодня {data[0]}\n{data[1]}'
-        )
-
-    elif date == 'monthnow':
-        data = bot._google_table.get_data('B3', 'C3')
-
-        await call.message.edit_text(
-            f'Расходы за текущий месяц\n{data[1]}'
-        )
-
-    elif date == 'monthyest':
-        data = bot._google_table.get_data('B2', 'C2')
-
-        await call.message.edit_text(
-            f'Расходы за прошлый месяц\n{data[1]}'
-        )
-
-    await state.finish()

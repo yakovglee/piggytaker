@@ -3,13 +3,14 @@ from distutils.log import info
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, \
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
+from aiogram.types.web_app_info import WebAppInfo
 
 def get_infoMenu() -> ReplyKeyboardMarkup:
 
-    infoMenu = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2, one_time_keyboard=True)
+    infoMenu = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
 
     btnInfo = [
-        KeyboardButton("Добавить \N{memo}"),
+        KeyboardButton("Добавить \N{memo}", web_app=WebAppInfo(url="https://script.google.com/macros/s/AKfycbxw64YYE9gsstXSIxkv7BZlaXeeC1y_S1fPWeFCMAEJLiBXsNkRNMeOWNdQVdFhkgo3/exec?action=add")),
         KeyboardButton("Посмотреть \N{open book}")
     ]
 
@@ -136,20 +137,3 @@ def _create_markups(kb, btn, add_other=False, type='other'):
         cb = f'{type}_other'
         btnOther = InlineKeyboardButton("Другое \U0001F635 ", callback_data=cb) 
         return kb.add(*btn, btnOther)
-
-
-async def back_to_Menu(call: CallbackQuery, menu, text=None):
-
-    if menu == 'info':
-        kb = get_infoMenu()
-        await call.message.answer("Что нужно сделать?", reply_markup=kb)
-        return
-    
-    if menu == 'main':
-        kb = get_mainMenu()
-    
-    if menu == 'data':
-        kb = get_dateMenu()
-    
-    await call.message.edit_text(text)
-    await call.message.edit_reply_markup(kb)

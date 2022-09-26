@@ -5,7 +5,8 @@ import logging
 async def command(dp):
     await dp.bot.set_my_commands(
         [
-            BotCommand("start", "Новая запись"),
+            BotCommand("add", "Новая запись"),
+            BotCommand("look", "Посмотреть"),
             BotCommand("reset", "Сброс")
         ]
     )
