@@ -129,15 +129,13 @@ def get_inlineMenu_other() -> InlineKeyboardMarkup:
 
 
 def _create_markups(kb, btn, add_other=False, type='other'):
-    btnBack = InlineKeyboardButton("<< Назад", callback_data='btnback')   
-
     if not add_other:
-        return kb.add(*btn).row(btnBack)
+        return kb.add(*btn)
 
     else:
         cb = f'{type}_other'
         btnOther = InlineKeyboardButton("Другое \U0001F635 ", callback_data=cb) 
-        return kb.add(*btn, btnOther).add(btnBack)
+        return kb.add(*btn, btnOther)
 
 
 async def back_to_Menu(call: CallbackQuery, menu, text=None):

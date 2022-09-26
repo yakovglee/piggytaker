@@ -11,10 +11,8 @@ from datetime import datetime
 
 import utils.markups as nav
 
-Counter = FSMData.Counter
 Data = FSMData.Data
 
-counter_cb = CallbackData('count')
 
 @dp.message_handler(state="*", commands='reset')
 @dp.message_handler(Text(equals='reset', ignore_case=True), state="*")
@@ -31,28 +29,6 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     await message.reply('Запись сброшена\nВыбери действие',reply_markup=nav.get_infoMenu())
 
 
-@dp.callback_query_handler(text='btnback', state="*")
-async def back(call: types.CallbackQuery, state: FSMContext):
-
-    async with state.proxy() as data:
-        data['counter'] -= 1
-    
-    if data['counter'] == 0:
-        await state.finish()
-        await call.message.delete()
-
-        await nav.back_to_Menu(call, "info")
-
-        await call.answer()
-
-    elif data['counter'] == 1:
-        await state.reset_state(with_data=False)
-        await nav.back_to_Menu(call, "data", "Выбери день")
-    
-    elif data['counter'] == 2:
-        await state.reset_state(with_data=False)
-        await nav.back_to_Menu(call, "main", "Выбери действие")
-
 
 @dp.message_handler()
 async def show_categories(message: types.Message, state: FSMContext):
@@ -60,11 +36,6 @@ async def show_categories(message: types.Message, state: FSMContext):
     text = message.text
 
     if text == "Добавить \N{memo}":
-
-        await Counter.counter.set()
-        async with state.proxy() as data:
-            data.setdefault('counter', 0)
-            data['counter'] += 1
         
         await Data.date.set()
 
@@ -73,10 +44,6 @@ async def show_categories(message: types.Message, state: FSMContext):
     
     elif text == "Посмотреть \N{open book}":
 
-        await Counter.counter.set()
-        async with state.proxy() as data:
-            data.setdefault('counter', 0)
-            data['counter'] += 1
 
         kb = nav.get_lookupMenu()
         await message.answer("Отчет за ...", reply_markup=kb)
@@ -85,14 +52,13 @@ async def show_categories(message: types.Message, state: FSMContext):
         await message.answer("Не могу помочь")
 
 
-@dp.callback_query_handler(text_contains="date", state=[Counter.counter, Data.date])
+@dp.callback_query_handler(text_contains="date", state=[Data.date])
 async def choice_date(call: types.CallbackQuery, state: FSMContext):
     date = call.data.split("_")[1]
 
     if date == 'now':
         async with state.proxy() as data:
             data['date'] = datetime.today().strftime("%d.%m.%Y")
-            data['counter'] += 1
 
         kb = nav.get_mainMenu()
         await call.message.edit_text("Выбери категорию", reply_markup=kb)
@@ -102,14 +68,13 @@ async def choice_date(call: types.CallbackQuery, state: FSMContext):
     else:
         await call.message.edit_text("Напиши дату в формате dd.mm")
     
-@dp.message_handler(filters.Regexp(regexp=r"(([0-3]\d)\W([0-1][0-9]))"), state=[Counter.counter, Data.date])
+@dp.message_handler(filters.Regexp(regexp=r"(([0-3]\d)\W([0-1][0-9]))"), state=[Data.date])
 async def take_data(message: types.Message, state: FSMContext):
 
     year = datetime.today().year
 
     async with state.proxy() as data:
         data['date'] = message.text + "." + str(year)
-        data['counter'] += 1
         
     kb = nav.get_mainMenu()
     await message.answer("Выбери категорию", reply_markup=kb)
@@ -117,14 +82,13 @@ async def take_data(message: types.Message, state: FSMContext):
     await Data.next()
 
 
-@dp.callback_query_handler(text_contains="main", state=[Counter.counter, Data.categ])
+@dp.callback_query_handler(text_contains="main", state=[Data.categ])
 async def choice_categ(call: types.CallbackQuery, state: FSMContext):
     
     category = call.data.split("_")[1]
     await call.message.edit_text("Что конкретно")
 
     async with state.proxy() as data:
-        data['counter'] += 1
 
         if category == "food":
             data['categ'] = "Еда"
@@ -158,7 +122,7 @@ async def choice_categ(call: types.CallbackQuery, state: FSMContext):
     
     await Data.next()
 
-@dp.callback_query_handler(Text(startswith=['food', 'trans', 'health', 'house', 'other']), state=[Counter.counter, Data.subcateg])
+@dp.callback_query_handler(Text(startswith=['food', 'trans', 'health', 'house', 'other']), state=[Data.subcateg])
 async def choice_subcateg(call: types.CallbackQuery, state: FSMContext):
     
     allias = {
@@ -200,11 +164,11 @@ async def choice_subcateg(call: types.CallbackQuery, state: FSMContext):
     await call.message.edit_text(f"{data['categ']}:{data['subcateg']}\nЦена")
 
 
-@dp.callback_query_handler(Text(endswith="_other"), state=[Counter.counter, Data.subcateg])
+@dp.callback_query_handler(Text(endswith="_other"), state=[Data.subcateg])
 async def take_subcateg_msg(call: types.CallbackQuery):
     await call.message.edit_text("Напиши категорию")
 
-@dp.message_handler(state=[Counter.counter, Data.subcateg])
+@dp.message_handler(state=[Data.subcateg])
 async def take_subcateg_msg(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['subcateg'] = message.text.capitalize()
@@ -213,13 +177,13 @@ async def take_subcateg_msg(message: types.Message, state: FSMContext):
 
     await message.answer(f"{data['categ']}:{data['subcateg']}\nЦена")
 
-@dp.message_handler(lambda message: not message.text.isdigit(), state=[Counter.counter, Data.price])
+@dp.message_handler(lambda message: not message.text.isdigit(), state=[Data.price])
 async def process_age_invalid(message: types.Message):
  
     return await message.reply("Вводи только числа (через точку)")
 
 
-@dp.message_handler(lambda message: message.text.isdigit(), state=[Counter.counter, Data.price])
+@dp.message_handler(lambda message: message.text.isdigit(), state=[Data.price])
 async def choice_subcateg_food(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['price'] = message.text
@@ -245,7 +209,7 @@ async def choice_subcateg_food(message: types.Message, state: FSMContext):
         who=who
     )
 
-@dp.callback_query_handler(Text(startswith=['lookup_']), state=[Counter.counter])
+@dp.callback_query_handler(Text(startswith=['lookup_']))
 async def get_data(call: types.CallbackQuery, state: FSMContext):
     date = call.data.split("_")[1]
 
