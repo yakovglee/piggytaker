@@ -37,6 +37,7 @@ async def choice_date(call: types.CallbackQuery, state: FSMContext):
     else:
         await call.message.edit_text("Напиши дату в формате dd.mm")
     
+
 @dp.message_handler(filters.Regexp(regexp=r"(([0-3]\d)\W([0-1][0-9]))"), state=[Data.date])
 async def take_data(message: types.Message, state: FSMContext):
 
@@ -51,49 +52,56 @@ async def take_data(message: types.Message, state: FSMContext):
     await Data.next()
 
 
-@dp.callback_query_handler(text_contains="main", state=[Data.categ])
-async def choice_categ(call: types.CallbackQuery, state: FSMContext):
-    
-    category = call.data.split("_")[1]
-    await call.message.edit_text("Что конкретно")
-
+@dp.callback_query_handler(Text(equals="main_food"), state=Data.categ)
+async def choice_categ_food(call: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
+        data['categ'] = "Еда"
+        
+        kb = nav.get_inlineMenu_food()
+        await call.message.edit_text("Выбери подкатегорию", reply_markup=kb)
+        await Data.next()
 
-        if category == "food":
-            data['categ'] = "Еда"
-            
-            kb = nav.get_inlineMenu_food()
-            await call.message.edit_reply_markup(kb)
-        
-        elif category == "trans":
-            data['categ'] = "Транспорт"
+@dp.callback_query_handler(Text(equals="main_trans"), state=Data.categ)
+async def choice_categ_trans(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        data['categ'] = "Транспорт"
 
-            kb = nav.get_inlineMenu_trans()
-            await call.message.edit_reply_markup(kb)
+        kb = nav.get_inlineMenu_trans()
+        await call.message.edit_text("Выбери подкатегорию", reply_markup=kb)
+        await Data.next()
 
-        elif category == "health":
-            data['categ'] = "Здоровье"
 
-            kb = nav.get_inlineMenu_health()
-            await call.message.edit_reply_markup(kb)
-        
-        elif category == "house":
-            data['categ'] = "Дом"
-        
-            kb = nav.get_inlineMenu_house()
-            await call.message.edit_reply_markup(kb)
-        
-        elif category == "other":
-            data['categ'] = "Другое"
-        
-            kb = nav.get_inlineMenu_other()
-            await call.message.edit_reply_markup(kb)
+@dp.callback_query_handler(Text(equals="main_health"), state=Data.categ)
+async def choice_categ_health(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        data['categ'] = "Здоровье"
+
+        kb = nav.get_inlineMenu_health()
+        await call.message.edit_text("Выбери подкатегорию", reply_markup=kb)
+        await Data.next()
+
+@dp.callback_query_handler(Text(equals="main_house"), state=Data.categ)
+async def choice_categ_house(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        data['categ'] = "Дом"
+
+        kb = nav.get_inlineMenu_house()
+        await call.message.edit_reply_markup(kb)
+        await Data.next()
+
+@dp.callback_query_handler(Text(equals="main_other"), state=Data.categ)
+async def choice_categ_other(call: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as data:
+        data['categ'] = "Другое"
     
-    await Data.next()
+        kb = nav.get_inlineMenu_other()
+        await call.message.edit_text("Выбери подкатегорию", reply_markup=kb)
+        await Data.next()  
+
 
 @dp.callback_query_handler(Text(endswith="other"), state=[Data.subcateg])
 async def take_subcateg_msg(call: types.CallbackQuery):
-    await call.message.edit_text("Напиши категорию")
+    await call.message.edit_text("Напиши подкатегорию")
 
 
 @dp.callback_query_handler(Text(startswith=['food', 'trans', 'health', 'house', 'other']), state=[Data.subcateg])
