@@ -7,7 +7,8 @@ async def command(dp):
         [
             BotCommand("add", "Новая запись"),
             BotCommand("look", "Посмотреть"),
-            BotCommand("reset", "Сброс")
+            BotCommand("reset", "Сброс"),
+            BotCommand("help", "Справка")
         ]
     )
 
