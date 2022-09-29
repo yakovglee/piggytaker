@@ -1,17 +1,21 @@
-from cmath import inf
-from distutils.log import info
+from os import getenv
+from dotenv import load_dotenv
+
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, \
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
 from aiogram.types.web_app_info import WebAppInfo
+
+load_dotenv()
+SCRIPT_ID = getenv('SCRIPT_ID')
 
 def get_infoMenu() -> ReplyKeyboardMarkup:
 
     infoMenu = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
 
     btnInfo = [
-        KeyboardButton("Добавить \N{memo}", web_app=WebAppInfo(url="https://script.google.com/macros/s/AKfycbxw64YYE9gsstXSIxkv7BZlaXeeC1y_S1fPWeFCMAEJLiBXsNkRNMeOWNdQVdFhkgo3/exec?action=add")),
-        KeyboardButton("Посмотреть \N{open book}")
+        KeyboardButton("Добавить \N{memo}", web_app=WebAppInfo(url=f"https://script.google.com/macros/s/{SCRIPT_ID}/exec?action=add")),
+        KeyboardButton("Посмотреть \N{open book}", web_app=WebAppInfo(url=f"https://script.google.com/macros/s/{SCRIPT_ID}/exec?action=look"))
     ]
 
     return infoMenu.add(*btnInfo)
