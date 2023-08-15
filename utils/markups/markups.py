@@ -129,6 +129,19 @@ def get_inlineMenu_other() -> InlineKeyboardMarkup:
     return _create_markups(inlineMenu_other, btn_inlineMenu_other, add_other=True, type='other')
 
 
+def get_inlineMenu_dohod() -> InlineKeyboardMarkup:
+
+    inlineMenu_dohod = InlineKeyboardMarkup(resize_keyboard=True, row_width=2)
+
+    btn_inlineMenu_dohod = [
+        InlineKeyboardButton("120250 (до 8)", callback_data='dohod_do8'),
+        InlineKeyboardButton("105820 (до 7)", callback_data='dohod_do7'),
+        InlineKeyboardButton("115440 (тыккын)", callback_data='dohod_sub'),
+        InlineKeyboardButton("76960 (чуча)", callback_data='dohod_week')	
+    ]
+
+    return _create_markups(inlineMenu_dohod, btn_inlineMenu_dohod, add_other=True, type='dohod')
+
 def _create_markups(kb, btn, add_other=False, type='other'):
     btnBack = InlineKeyboardButton("<< Назад", callback_data='btnback')   
 

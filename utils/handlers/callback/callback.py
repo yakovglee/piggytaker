@@ -109,7 +109,7 @@ async def choice_date(call: types.CallbackQuery, state: FSMContext):
 
             if data.state == 'DataPlus:date':
 
-                await call.message.edit_text(f"Цена")
+                await call.message.edit_text(f"Цена", reply_markup=nav.get_inlineMenu_dohod())
 
                 await DataPlus.next()
 
@@ -135,7 +135,7 @@ async def take_data(message: types.Message, state: FSMContext):
 
         if data.state == 'DataPlus:date':
 
-            await message.answer(f"Цена")
+            await message.answer(f"Цена", reply_markup=nav.get_inlineMenu_dohod())
 
             await DataPlus.next()
 
@@ -230,7 +230,7 @@ async def choice_subcateg(call: types.CallbackQuery, state: FSMContext):
     await call.message.edit_text(f"{data['categ']}:{data['subcateg']}\nЦена")
 
 
-@dp.callback_query_handler(Text(endswith="_other"), state=[Counter.counter, Data.subcateg])
+@dp.callback_query_handler(Text(endswith="_other"), state=[Counter.counter, Data.subcateg, DataPlus.price])
 async def take_subcateg_msg(call: types.CallbackQuery):
     await call.message.edit_text("Напиши категорию")
 
@@ -292,6 +292,42 @@ async def choice_subcateg_food(message: types.Message, state: FSMContext):
                 price=price,
                 who=who
             )
+
+@dp.callback_query_handler(Text(startswith=['dohod_']), state=[Counter.counter, DataPlus.price])
+async def take_dohod(call: types.CallbackQuery, state: FSMContext):
+
+    async with state.proxy() as data:
+        # data['price'] = call.message.text
+
+        dohod = call.data.split("_")[1]
+
+        if dohod == 'do8':
+            price = 120250
+        
+        elif dohod == 'do7':
+            price = 105820
+        
+        elif dohod == 'sub':
+            price = 115440
+        
+        elif dohod == 'week':
+            price = 76960
+        
+        await state.finish()
+
+        await call.message.answer(
+            f"Дата: {data['date']}\nЦена: {price}\nПользватель: {call.message.from_user.first_name}",
+            reply_markup=nav.get_infoMenu()
+        )
+
+        bot._google_table.insert(
+            data=data['date'],
+            categ='Доход',
+            subcateg="Доход",
+            price=price,
+            who= call.message.from_user.first_name
+        )
+        
 
 @dp.callback_query_handler(Text(startswith=['lookup_']), state=[Counter.counter])
 async def get_data(call: types.CallbackQuery, state: FSMContext):
