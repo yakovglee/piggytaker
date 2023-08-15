@@ -9,7 +9,8 @@ def get_infoMenu() -> ReplyKeyboardMarkup:
     infoMenu = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2, one_time_keyboard=True)
 
     btnInfo = [
-        KeyboardButton("Добавить \N{memo}"),
+        KeyboardButton("Добавить расход\N{memo}"),
+        KeyboardButton("Добавить доход\N{memo}"),
         KeyboardButton("Посмотреть \N{open book}")
     ]
 

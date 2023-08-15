@@ -8,3 +8,7 @@ class Data(StatesGroup):
     categ = State()
     subcateg = State()
     price = State()
+
+class DataPlus(StatesGroup):
+    date = State()
+    price = State()

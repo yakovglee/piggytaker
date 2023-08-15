@@ -5,7 +5,8 @@ class GoogleTable:
     def __init__(
         self, 
         credence_service_file: str = "creds.json", 
-        googlesheet_file_key: str = "1bZ6dgp-lAeRP3viYW6ENgaIrvcy6LZnXtgd2G2rjeJU"
+        #googlesheet_file_key: str = "1bZ6dgp-lAeRP3viYW6ENgaIrvcy6LZnXtgd2G2rjeJU"
+        googlesheet_file_key: str = "1Jc5OL1FMWOnZGjiZ2mI2ZtwmaN-T_CZoFohgswIzemU"
     ) -> None:
         self.credence_service_file = credence_service_file
         self.googlesheet_file_key = googlesheet_file_key
